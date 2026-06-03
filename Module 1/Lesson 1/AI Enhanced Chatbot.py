@@ -50,6 +50,7 @@ else:
             elif mood == "bad":
                 print("Oh that's unfortunate!")
             else:
-                print("I hope something good happens to you soon!")
-
+                print("I hope you have a good day regardless of how you are feeling!")
+            
+            break
         print(f"Nice talking to you {name}, have a good day!")

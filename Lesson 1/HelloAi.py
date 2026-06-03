@@ -13,4 +13,3 @@ else:
     print("Im not sure how i can help")
 
 print(f"Nice talking {name} have a good day")
-

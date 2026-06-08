@@ -4,17 +4,17 @@ from colorama import Fore, init
 init(autoreset= True)
 
 destinations = {
-    "Beaches":[
+    "beaches":[
         "Maldives",
         "Marine Drive",
         "Goa",]
-    ,"Mountains":[
+    ,"mountains":[
         "Himalayas",
         "Alps",
         "Rockies",]
-    ,"Cities":[
+    ,"cities":[
         "New York",
-        "Mumbai"
+        "Mumbai",
         "Delhi"]
 
 }
@@ -28,7 +28,7 @@ Jokes = [
 def normalise_input(text):
     return re.sub(r"\s+", " ", text.strip().lower())
 
-def reccomend():
+def recommend():
     print(Fore.GREEN + "Travel Bot: Beaches, Mountains, Cities?")
     preference = input(Fore.BLUE + "You: ")
     preference = normalise_input(preference)
@@ -36,17 +36,17 @@ def reccomend():
     if preference in destinations:
         suggest = random.choice(destinations[preference])
         print(Fore.GREEN + f"Travel Bot: I recommend visiting {suggest}!")
-        print(Fore.GREEN + "Travel Bot: Do you like this (Ys/No)? ")
+        print(Fore.GREEN + "Travel Bot: Do you like this (Yes/No)? ")
         answer = input(Fore.BLUE + "You: ").lower()
 
         if answer == "yes":
             print(Fore.GREEN + f"Travel Bot: Great! I hope you enjoy {suggest}!")
         elif answer == "no":
             print(Fore.GREEN + "Travel Bot: No worries! Let's try again.")
-            reccomend()
+            recommend()
         else:
             print(Fore.GREEN + "Travel Bot: I will suggest another one!")
-            reccomend()
+            recommend()
 
     else:
         print(Fore.GREEN + "Travel Bot: I didn't understand that. Please choose from Beaches, Mountains, or Cities.")
@@ -84,7 +84,7 @@ def chat():
         user_input = normalise_input(user_input)
 
         if user_input == "recommend":
-            reccomend()
+            recommend()
         elif "packing tips" in user_input:
             packing_tips()
         elif "joke" in user_input:

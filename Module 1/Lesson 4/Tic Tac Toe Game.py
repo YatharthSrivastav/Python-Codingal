@@ -24,17 +24,17 @@ def player_move(board, symbol):
     move = -1
     while move not in range(1, 10) or not board[move -1].isdigit():
         try:
-            move = int(input("Enter a number between 1 to 9"))
+            move = int(input("Enter a number between 1 to 9\n"))
             if move not in range (1, 10) or not board[move -1].isdigit():
-                print("Invalid move. Please try again1")
+                print("Invalid move. Please try again\n")
         except ValueError:
-            print("Enter a number between 1 and 9!")
+            print("Enter a number between 1 and 9!\n")
     board[move -1] = symbol
 
 def player_choice():
     symbol = ''
     while symbol not in ['X', 'O']:
-        symbol = input(Fore.BLUE + "Do you want to bve X or O").upper()
+        symbol = input(Fore.BLUE + "Do you want to be X or O\n").upper()
     if symbol == 'X':
         return('X', 'O')
     else:
@@ -76,7 +76,7 @@ def check_full(board):
 
 def tic_tac_toe():
     print("Welcome to Tic Tac Toe!")
-    player_name = input(Fore.GREEN + "Enter your name")
+    player_name = input(Fore.GREEN + "Enter your name\n")
     while True:
         board = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
         player_symbol, ai_symbol = player_choice()
@@ -89,7 +89,7 @@ def tic_tac_toe():
                 player_move(board, player_symbol)
                 if check_win(board, player_symbol):
                     display_board(board)
-                    print("Congratulations! " + player_name + "You won the game")
+                    print("Congratulations! " + player_name + " You won the game")
                     game_on = False
                 else:
                     if check_full(board):
@@ -100,7 +100,7 @@ def tic_tac_toe():
                         turn = 'AI'
 
             else:
-                ai_move(board, ai_symbol)
+                ai_move(board, ai_symbol, player_symbol)
                 if check_win(board, ai_symbol):
                     display_board(board)
                     print("AI has won the game")
@@ -113,9 +113,9 @@ def tic_tac_toe():
                     else:
                         turn = 'Player'
 
-        play_again = input("Do you want to play another game?").lower()
+        play_again = input("Do you want to play another game?\n").lower()
         if play_again != "yes":
             print("Thank you for playing")
             break
-    if __name__=="__main__":
-        tic_tac_toe()
+if __name__=="__main__":
+    tic_tac_toe()

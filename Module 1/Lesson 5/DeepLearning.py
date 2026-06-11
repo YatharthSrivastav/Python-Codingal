@@ -1,12 +1,12 @@
 import tensorflow as tf
-from tensorflow.keras import layers, models
+import keras
 import matplotlib.pyplot as plt
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
 x_train, x_test = x_train /255.0, x_test / 255.0
 
-model = models.Sequential([layers.Flatten(input_shape = (28, 28)), layers.Dense(128, activation='relu'), layers.Dense(10, activation='softmax')])
+model = keras.Sequential([keras.layers.Flatten(input_shape = (28, 28)), keras.layers.Dense(128, activation='relu'), keras.layers.Dense(10, activation='softmax')])
 
 model.compile(
     optimizer = 'adam',
@@ -17,8 +17,6 @@ model.compile(
 model.fit(x_train, y_train, epochs = 5)
 
 test_loss, test_acc = model.evaluate(x_test, y_test)
-
-print(f"Test accuracy {test_acc}")
 
 predictions = model.predict(x_test)
 

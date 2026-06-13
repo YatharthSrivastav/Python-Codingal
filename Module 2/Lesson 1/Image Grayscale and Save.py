@@ -7,9 +7,9 @@ img_resize = cv.resize(gray_img, (800, 800))
 
 cv.imshow("Loaded Image", img_resize)
 
-key = cv.waitKey(0)
+key = cv.waitKey(0) & 0xFF
 
-if key == 's':
+if key == ord ('s'):
     cv.imwrite("Grayscale.jpg",img_resize)
     print("Image has been saved as 'Grayscale.jpg'")
 else:

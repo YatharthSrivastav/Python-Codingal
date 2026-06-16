@@ -38,5 +38,6 @@ cv.arrowedLine(img_rgb, arrow_end,arrow_start, (255, 255, 0), 3, tipLength= 0.05
 plt.figure(figsize = (30, 20))
 plt.imshow(img_rgb)
 plt.title("Annoted Image")
+plt.axis('off')
 plt.show()
 

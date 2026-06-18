@@ -26,10 +26,10 @@ def edge_detection(image_path):
     print("3. Laplacian Edge Detection")
     print("4. Gaussian Smoothening")
     print("5. Median Filtering")
-    print("Exit")
+    print("Exit\n")
 
     while True:
-        choice = input("Enter a number between 1 to 6")
+        choice = input("Enter a number between 1 to 6\n")
 
         if choice == '1':
             sobel_x = cv.Sobel(gray_image, cv.CV_64F, 1, 0, ksize = 3)
@@ -61,7 +61,7 @@ def edge_detection(image_path):
             display_image("Medain Filter Image", median_filter)
 
         elif choice == '6':
-            print("Exiting")
+            print("See You! Bye!")
             break
 
         else:

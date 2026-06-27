@@ -8,6 +8,7 @@ if not cam.isOpened():
     exit()
 while True:
     ret, frame = cam.read()
+    frame = cv.flip(frame, 1)
     if not ret:
         print("Error: Couldn't open the camera")
         break

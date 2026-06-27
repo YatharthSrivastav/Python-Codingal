@@ -41,7 +41,7 @@ def main():
             break
         result = colour_filter(frame, ftype)
         cv.imshow("Filter", result)
-        key = cv.waitKey(0) & 0XFF
+        key = cv.waitKey(1) & 0XFF
         if key == ord('r'):
             ftype = 'red tint'
         elif key == ord('b'):
@@ -56,8 +56,6 @@ def main():
             ftype = 'cartoon'
         elif key == ord('q'):
             break
-        else:
-            print("Enter a valid key")
     cam.release()
     cv.destroyAllWindows()
 if __name__ == '__main__':

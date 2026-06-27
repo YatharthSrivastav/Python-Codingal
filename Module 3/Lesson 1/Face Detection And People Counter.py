@@ -22,7 +22,7 @@ while True:
     cv.putText(frame, f"Number Of People: {len(faces)}", (10, 30), font, 1, (255, 0 , 0), 2, cv.LINE_AA )
     cv.imshow("Face Tracking And People Counter", frame)
 
-    if cv.waitKey(0) == ord('q'):
+    if cv.waitKey(1) & 0xFF == ord('q'):
         break
-    cam.release()
-    cv.destroyAllWindows()
+cam.release()
+cv.destroyAllWindows()

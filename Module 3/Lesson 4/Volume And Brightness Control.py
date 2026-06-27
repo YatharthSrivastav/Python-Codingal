@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
-from pycaw.pycaw import AudioUtilities, IAudioEndPointVolume
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 import screen_brightness_control as sbc
 
 Hands = mp.solutions.hands
@@ -11,7 +11,7 @@ TH, IX = Hands.HandLandmark.THUMB_TIP, Hands.HandLandmark.INDEX_FINGER_TIP
 
 try:
     dev = AudioUtilities.GetDefaultDevice() if hasattr(AudioUtilities, "GetDefaultOutputDevice") else AudioUtilities.GetSpeakers()
-    volct = dev.EndpointVolume.QueryInterface(IAudioEndPointVolume)
+    volct = dev.EndpointVolume.QueryInterface(IAudioEndpointVolume)
     minv, maxv = volct.GetVolumeRange()[:2]
 except:
     print("Error")
@@ -32,15 +32,15 @@ while True:
         break
     frame = cv.flip(frame, 1)
     h, w = frame.shape[:2]
-    result = hands.process(cv.cvtColor(cv.COLOR_BGR2RGB))
+    result = hands.process(cv.cvtColor(frame, cv.COLOR_BGR2RGB))
 
-    if result.multi_hand_landmarks and result.multi.handedness:
-        for i in enumerate(result.multi_hand_landmarks):
+    if result.multi_hand_landmarks and result.multi_handedness:
+        for i, hand in enumerate(result.multi_hand_landmarks):
             label = result.multi_handedness[i].classification[0].label
-            draw.draw_landmarks(frame, hands, Hands.HAND_CONNECTIONS)
-            lm = hands.landmark
-            tp = int(lm[TH].x*w, lm[TH].y*h)
-            ip = int(lm[IX].x*w, lm[IX].y*h)
+            draw.draw_landmarks(frame, hand, Hands.HAND_CONNECTIONS)
+            lm = hand.landmark
+            tp = (int(lm[TH].x * w), int(lm[TH].y * h))
+            ip = (int(lm[IX].x * w), int(lm[IX].y * h))
             cv.circle(frame, tp, 10, (255, 0, 0), -1)
             cv.circle(frame, ip, 10, (255, 0, 0), -1)
             cv.line(frame, tp, ip, (0, 0, 255), 3)

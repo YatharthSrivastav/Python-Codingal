@@ -1,3 +1,4 @@
+
 import cv2 as cv
 import numpy as np
 import time
@@ -5,7 +6,7 @@ import mediapipe as mp
 
 H = mp.solutions.hands
 TIP = H.HandLandmark
-tips = {
+tip_ids = {
     "thumb": TIP.THUMB_TIP,
     "index": TIP.INDEX_FINGER_TIP,
     "middle": TIP.MIDDLE_FINGER_TIP,
@@ -43,12 +44,14 @@ def apply_filter(frame, t):
         g = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         e = cv.adaptiveThreshold(cv.medianBlur(g, 7), 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 9, 2)
         c = cv.bilateralFilter(frame, 9, 75, 75)
-        return cv.bitwise_and(c, c, mask = c)
+        return cv.bitwise_and(c, c, mask = e)
     return frame
+
 cam = cv.VideoCapture(0)
 if not cam.isOpened():
     print("Error: Couldn't access the camera")
     exit()
+
 cv.namedWindow(MAIN, cv.WINDOW_NORMAL)
 
 while True:
@@ -58,56 +61,81 @@ while True:
         if key == ord('q'):
             break
         if key == 27:
-            paused = False; pinch_on = False
+            paused = False
+            pinch_on = False
             try:
                 cv.destroyWindow(POP)
-            except: pass
+            except:
+                pass
             continue
         try:
-            if cv.getWindowProperty(POP, cv.WND_PROP_VISIBLE) <= 0: PAUSED = False; pinch_on = False
+            if cv.getWindowProperty(POP, cv.WND_PROP_VISIBLE) <= 0:
+                paused = False
+                pinch_on = False
         except:
-            paused = False; pinch_on = False
+            paused = False
+            pinch_on = False
         continue
+
     ret, frame = cam.read()
     if not ret:
         print("Error: Couldn't open the camera")
         break
+
     frame = cv.flip(frame, 1)
     h, w = frame.shape[:2]
     result = hands.process(cv.cvtColor(frame, cv.COLOR_BGR2RGB))
-    now = time.time(); capture = False
+    now = time.time()
+    capture = False
 
     if result.multi_hand_landmarks:
         hand = result.multi_hand_landmarks[0]
         draw.draw_landmarks(frame, hand, H.HAND_CONNECTIONS)
         lm = hand.landmark
-        tips = {k: (int(lm[v].x * w), int(lm[v].y * h)) for k, v in tips.items()}
+
+        tips = {k: (int(lm[v].x * w), int(lm[v].y * h)) for k, v in tip_ids.items()}
+
         tx, ty = tips["thumb"]
         ix, iy = tips["index"]
+
         pinch = abs(tx - ix) < TP and abs(ty - iy) < TP
-        if not pinch and not pinch_on and now - lc > CAP: pinch_on = True;capture = True;lc = now
+
+        if pinch and not pinch_on and now - lc > CAP:
+            pinch_on = True
+            capture = True
+            lc = now
+
         if not pinch:
+            pinch_on = False
             t = next((k for k in pairs if abs(tx - tips[k][0]) < TT and abs(ty - tips[k][1]) < TT), None)
-            if t and now - la > DEB: cur = pairs[t][st[t]]; st[t] ^= 1; la = now; print("Filter", cur)
-                
+            if t and now - la > DEB:
+                cur = pairs[t][st[t]]
+                st[t] ^= 1
+                la = now
+                print("Filter", cur)
+
     out = apply_filter(frame, cur)
-    if cur == "EDGE": out = cv.cvtColor(out, cv.COLOR_GRAY2BGR)
+
+    if cur == "EDGE":
+        out = cv.cvtColor(out, cv.COLOR_GRAY2BGR)
+
+    text = f"Filter: {cur}"
+    cv.putText(out, text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 4, cv.LINE_AA)
+    cv.putText(out, text, (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
 
     if capture:
         name = f"Picture {int(now)}.jpg"
         cv.imwrite(name, out)
         print("Saved", name)
         paused = True
-        freeze = True
-        out.copy()
+        freeze = out.copy()
         cv.imshow(POP, freeze)
-        
+
     cv.imshow(MAIN, out)
+
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
+
 cam.release()
 cv.destroyAllWindows()
 hands.close()
-
-
-        

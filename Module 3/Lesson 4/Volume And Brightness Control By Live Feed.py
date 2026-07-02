@@ -19,10 +19,10 @@ except:
 
 cam = cv.VideoCapture(0)
 if not cam.isOpened():
-    print("Error: Couldn't acess camera")
+    print("Error: Couldn't access camera")
     exit()
 
-WIN = "Hand Guesture Control"
+WIN = "Hand Gesture Control"
 cv.namedWindow(WIN, cv.WINDOW_NORMAL)
 
 while True:
@@ -47,7 +47,7 @@ while True:
             dist = float(np.hypot(ip[0] - tp[0], ip[1] - tp[1]))
             
             if label == "Left":
-                v = np.interp(dist, [300, 300], [minv, maxv])
+                v = np.interp(dist, [30, 300], [minv, maxv])
                 try: volct.SetMasterVolumeLevel(v, None)
                 except Exception as e: print(f"Volume Error {e}")
                 bar = int(np.interp(dist, [30, 300], [450, 130]))
@@ -57,26 +57,22 @@ while True:
                 cv.putText(frame, f"{pct}%", (40, 450), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
 
             elif label == "Right":
-                b = np.interp(dist, [300, 300, [0, 100]])
+                b = int(np.interp(dist, [30, 300], [0, 100]))
                 try: sbc.set_brightness(b)
                 except Exception as e: print(f"Brightness Error {e}")
                 bar = int(np.interp(dist, [30, 300], [450, 130]))
-                x1, x2 = w = 85, y = 50
+                x1, x2 = w-85, w-50
                 cv.rectangle(frame, (x1, 150), (x2, 400), (0, 255, 0), 3)
                 cv.rectangle(frame, (x1, bar), (x2, 400), (255, 0, 0), cv.FILLED)
                 cv.putText(frame, f"{b}%", (40, 450), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
-        cv.imshow(WIN, cv.WINDOW_NORMAL)
-        key = cv.waitKey(1) & 0xFF
-        if key in (27, ord('q')):
+    cv.imshow(WIN, frame)
+    key = cv.waitKey(1) & 0xFF
+    if key in (27, ord('q')):
+        break
+    try:
+        if cv.getWindowProperty(WIN, cv.WND_PROP_VISIBLE) < 1:
             break
-        try:
-            if cv.getWindowProperty(WIN, cv.WND_PROP_VISIBLE) < 1:
-                break
-        except cv.error:
-            break
+    except cv.error:
+        break
 cam.release()
 cv.destroyAllWindows()
-
-
-
-                

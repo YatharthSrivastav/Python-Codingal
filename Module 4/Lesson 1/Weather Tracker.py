@@ -1,7 +1,7 @@
 import requests
 
-def get_weather():
-    url = "https://api.openweathermap.org/data/2.5/weather?lat=13.075560785450678&lon=77.64159766857249&units=metric&appid=51d05644140940cfc7f854c2c1804a3a"
+def get_weather(LAT, LON):
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&units=metric&appid=51d05644140940cfc7f854c2c1804a3a"
 
     response = requests.get(url)
 
@@ -30,8 +30,10 @@ def get_weather():
     
 def main():
     print("Hello! Welcome to your Weather Tracker App")
+    LAT = input("Please enter the latitude of your place\n")
+    LON = input("Please enter the longitude of your place\n")
     print("Today's weather is...\n")
-    weather = get_weather()
+    weather = get_weather(LAT, LON)
     print(weather)
     print()
     print("Hope you have a nice day! Bye!")

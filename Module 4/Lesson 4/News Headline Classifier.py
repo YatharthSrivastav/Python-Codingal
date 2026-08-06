@@ -1,9 +1,12 @@
 import requests
-from Config1 import API_KEY
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
+HF_API_KEY = os.getenv("HF_API_KEY")
 MODEL_ID = "facebook/bart-large-mnli"
 API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}"
-HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 TOPICS = ["Sports","Technology", "Business", "Politics", "Health"]
 
 def ask_hf(headline: str):
@@ -33,7 +36,7 @@ def show(headline: str, preds: list):
     print("\nTop 3 guesses:")
     top3 = sorted(preds, key = lambda x: x["score"], reverse = True)[:3]
     for i, p in enumerate(top3, start = 1):
-        print(f"{i}. {p['label']: < 11} {round(p['score'] * 100, 1)}% [{bar(p['score'])}]")
+        print(f"{i}. {p['label']: <11} {round(p['score'] * 100, 1)}% [{bar(p['score'])}]")
     print("=" * 60)
 
 def main():

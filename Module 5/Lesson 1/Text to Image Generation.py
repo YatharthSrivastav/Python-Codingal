@@ -1,7 +1,11 @@
 from huggingface_hub import InferenceClient
 from datetime import datetime
 from PIL import Image
-from Config1 import HF_API_KEY
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+HF_API_KEY = os.getenv("HF_API_KEY")
 
 MODELS = [
 "ByteDance/SDXL-Lightning",

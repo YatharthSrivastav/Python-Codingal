@@ -24,10 +24,6 @@ def _extract_err(r: requests.Response) -> str:
         return (r.text or "").strip() or r.reason or "Request failed."
 
 def generate_image_from_text(prompt: str, negative_prompt: str = None) -> Image.Image:
-    """
-    Sends prompt (and optional negative prompt) to HF Router model and returns PIL image.
-    """
-    # Different deployments support different payload shapes; try a couple.
     payloads = []
     if negative_prompt:
         payloads.append({"inputs": {"prompt": prompt, "negative_prompt": negative_prompt}})
@@ -38,7 +34,6 @@ def generate_image_from_text(prompt: str, negative_prompt: str = None) -> Image.
 
     last_err = None
     for payload in payloads:
-        # small retries for "loading" (503) responses
         for attempt in range(3):
             try:
                 r = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)

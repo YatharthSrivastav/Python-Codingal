@@ -15,7 +15,7 @@ MODELS = [
     "CompVis/stable-diffusion-v1-4",
 ]
 
-HEADERS = {"Authorization": f"Bearer: {HF_API_KEY}", "Accept": "image/png"}
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}", "Accept": "image/png"}
 def generate_image(prompt):
     payload, last_err = {"inputs": prompt}, None
     for model in MODELS:

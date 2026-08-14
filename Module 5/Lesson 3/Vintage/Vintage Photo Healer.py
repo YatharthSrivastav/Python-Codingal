@@ -68,10 +68,8 @@ def local_inpaint(image_path: str, mask_path: str) -> Image.Image:
     if (m.shape[0], m.shape[1]) != (h, w):
         m = cv2.resize(m, (w, h), interpolation=cv2.INTER_NEAREST)
 
-    # Ensure mask is binary-ish: white = inpaint region
     _, m_bin = cv2.threshold(m, 127, 255, cv2.THRESH_BINARY)
 
-    # Telea inpainting (fast + good for scratches); you can switch to INPAINT_NS
     out = cv2.inpaint(img, m_bin, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
     out_rgb = cv2.cvtColor(out, cv2.COLOR_BGR2RGB)
     return Image.fromarray(out_rgb)

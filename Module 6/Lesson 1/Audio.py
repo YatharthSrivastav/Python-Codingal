@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import speech_recognition as sr
 from speech_recognition import AudioData
+import os
 
 stop_event = threading.Event()
 
@@ -37,78 +38,54 @@ def record_audio():
     return b''.join(frames), 16000, width
 
 def save_audio(data, rate, width, filename="recording.wav"):
-
     with wave.open(filename, 'wb') as wf:
-
         wf.setnchannels(1)
-
         wf.setsampwidth(width)
-
         wf.setframerate(rate)
-
         wf.writeframes(data)
 
-    print(f"💾 Saved: {filename}")
+    print(f"Saved: {filename}")
 
-def transcribe(data, rate, width):
-
+def transcribe(data, rate, width, filename="transcript.txt"):
     recognizer = sr.Recognizer()
-
     audio = AudioData(data, rate, width)
 
     try:
-
         text = recognizer.recognize_google(audio)
+        print(f"Transcription: {text}")
 
-        print(f"📝 Transcription: {text}")
 
     except sr.UnknownValueError:
-
-        print("❌ Could not understand audio")
+        print("Could not understand audio")
 
     except sr.RequestError as e:
-
-        print(f"❌ API Error: {e}")
+        print(f"API Error: {e}")
+    with open(filename, "w") as f:
+        f.write(text)
+        print(f"Transcript saved to {filename}")
 
 def plot_waveform(data, rate):
-
     samples = np.frombuffer(data, dtype=np.int16)
-
     time_axis = np.linspace(0, len(samples) / rate, len(samples))
 
     plt.figure(figsize=(10, 4))
-
     plt.plot(time_axis, samples, color='blue')
-
     plt.title("Your Voice Waveform")
-
     plt.xlabel("Time (seconds)")
-
     plt.ylabel("Amplitude")
-
     plt.grid(True, alpha=0.3)
-
     plt.tight_layout()
-
     plt.show()
 
 def main():
-
     print("=" * 40)
-
-    print("🎙️ HELLO AI, CAN YOU HEAR ME?")
-
+    print("HELLO AI, CAN YOU HEAR ME?")
     print("=" * 40)
-
     print("\nSpeak into your microphone...")
 
-
     audio_data, rate, width = record_audio()
-
     save_audio(audio_data, rate, width)
-
     transcribe(audio_data, rate, width)
-
     plot_waveform(audio_data, rate)
 
 if __name__ == "__main__":

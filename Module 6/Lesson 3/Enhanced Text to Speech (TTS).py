@@ -2,6 +2,7 @@ import speech_recognition as sr
 import pyttsx3
 from googletrans import Translator
 import random
+import asyncio
 
 def speak(text, language="en"):
     engine = pyttsx3.init()
@@ -30,11 +31,11 @@ def speech_to_text():
         print(f"API Error: {e}")
     return ""
 
-def translate_text(text, target_language="es"):
-    translator = Translator()
-    translation = translator.translate(text, dest=target_language)
-    print(f"Translated text: {translation.text}")
-    return translation.text
+async def translate_text(text, target_language="es"):
+    async with Translator() as translator:
+        translation = await translator.translate(text, dest=target_language)
+        print(f"Translated text: {translation.text}")
+        return translation.text
 
 def display_options():
     print("Available language options are: ")
@@ -102,7 +103,7 @@ def tell_joke():
     speak(random.choice(jokes))
 
 
-def main():
+async def main():
     target_languages = display_options()
 
     while True:
@@ -131,7 +132,7 @@ def main():
                 tell_joke()
 
             else:
-                translated_text = translate_text(original_text, target_language=target_languages)
+                translated_text = await translate_text(original_text, target_language=target_languages)
                 speak(translated_text, language="en")
                 print("Translation done!")
         else:
@@ -139,4 +140,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

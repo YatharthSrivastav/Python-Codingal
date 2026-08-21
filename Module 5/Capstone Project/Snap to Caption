@@ -1,49 +1,54 @@
-from Config import HF_API_KEY
-import requests, io, base64
+import base64, requests
+from io import BytesIO
 from PIL import Image
-from colorama import Fore, Style, init
+from Config import HF_API_KEY
 
-init(autoreset=True)
-
-ROUTER_URL = "https://router.huggingface.co/v1/chat/completions"
-HEADERS = {"Authorization": f"Bearer {HF_API_KEY}", "Content-Type": "application/json"}
-
-VISION_MODELS = [
-    "Qwen/Qwen3-VL-8B-Instruct:together",
-    "Qwen/Qwen3-VL-32B-Instruct:together",
-    "Qwen/Qwen2.5-VL-32B-Instruct:together",
-    "Qwen/Qwen2-VL-7B-Instruct:together",
-]
+CHAT_URL = "https://router.huggingface.co/v1/chat/completions"
+INFER_URL = "https://router.huggingface.co/hf-inference/models"
+CHAT_HEADERS = {"Authorization": f"Bearer {HF_API_KEY}", "Content-Type": "application/json"}
 
 TEXT_MODELS = [
+    "mistralai/Mistral-7B-Instruct-v0.3:together",
     "Qwen/Qwen2.5-7B-Instruct:together",
     "Qwen/Qwen2.5-14B-Instruct:together",
-    "mistralai/Mistral-7B-Instruct-v0.3:together",
 ]
 
-def data_url_from_pil(image: Image.Image) -> str:
-    buf = io.BytesIO()
-    image.convert("RGB").save(buf, format="JPEG", quality=90)
-    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode("utf-8")
+VISION_MODELS = [
+    "Qwen/Qwen2.5-VL-7B-Instruct:together",
+    "Qwen/Qwen3-VL-8B-Instruct:together",
+]
 
-def extract_err(r: requests.Response) -> str:
+IMAGE_MODELS = [
+    "stabilityai/stable-diffusion-3-medium-diffusers",
+    "stabilityai/stable-diffusion-xl-base-1.0",
+]
+
+def _extract_err(r: requests.Response) -> str:
     try:
         j = r.json()
-        return j.get("error", {}).get("message") or str(j)
+        if isinstance(j, dict):
+            e = j.get("error")
+            if isinstance(e, dict):
+                return e.get("message") or str(j)
+            return str(e or j)
+        return str(j)
     except Exception:
         return (r.text or "").strip() or r.reason or "Request failed."
 
-def chat_with_models(models, messages, max_tokens=120, temperature=0.3):
+def _data_url(image_bytes: bytes) -> str:
+    return "data:image/png;base64," + base64.b64encode(image_bytes).decode("utf-8")
+
+def _chat(models, messages, max_tokens=180, temperature=0.7) -> str:
     last = None
     for model in models:
         payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
         try:
-            r = requests.post(ROUTER_URL, headers=HEADERS, json=payload, timeout=120)
+            r = requests.post(CHAT_URL, headers=CHAT_HEADERS, json=payload, timeout=120)
         except requests.RequestException as e:
             last = f"Request failed: {e}"
             continue
         if r.status_code != 200:
-            last = f"Status {r.status_code}: {extract_err(r)}"
+            last = f"{r.status_code}: {_extract_err(r)}"
             continue
         try:
             d = r.json()
@@ -54,52 +59,59 @@ def chat_with_models(models, messages, max_tokens=120, temperature=0.3):
         if out:
             return out
         last = "Empty response from model."
-    raise Exception(last or "All models failed.")
+    raise Exception(last or "All chat models failed.")
 
-def words(text: str):
-    return (text or "").strip().split()
+def generate_text(prompt: str) -> str:
+    return _chat(TEXT_MODELS, [{"role": "user", "content": prompt}], max_tokens=180, temperature=0.7)
 
-def get_caption(image: Image.Image) -> str:
-    img_url = data_url_from_pil(image)
-    messages = [{
+def generate_image(prompt: str) -> bytes:
+    last = None
+    headers = {"Authorization": f"Bearer {HF_API_KEY}", "Accept": "image/png", "Content-Type": "application/json"}
+    for model in IMAGE_MODELS:
+        url = f"{INFER_URL}/{model}"
+        # try common payload shapes
+        for payload in ({"inputs": prompt}, {"inputs": {"prompt": prompt}}, {"prompt": prompt}):
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=180)
+            except requests.RequestException as e:
+                last = f"{model}: Request failed: {e}"
+                continue
+            ct = (r.headers.get("Content-Type") or "").lower()
+            if r.status_code == 200 and ct.startswith("image/"):
+                return r.content
+            last = f"{model}: {r.status_code}: {_extract_err(r)}"
+    raise Exception(last or "Image generation failed (likely 402 credits required or 404 model not available).")
+
+def caption_image(image_bytes: bytes) -> str:
+    img_url = _data_url(image_bytes)
+    msgs = [{
         "role": "user",
         "content": [
-            {"type": "text", "text": "Write one clear, complete sentence caption for this image."},
+            {"type": "text", "text": "Write a short caption for this image."},
             {"type": "image_url", "image_url": {"url": img_url}},
         ],
     }]
-    return chat_with_models(VISION_MODELS, messages, max_tokens=80, temperature=0.2)
-
-def expand_caption(caption: str) -> str:
-    prompt = (
-        "Expand the following into EXACTLY 30 words. Single paragraph. One complete sentence. "
-        "End with a period. No title.\n\n"
-        f"Caption: {caption}"
-    )
-    txt = chat_with_models(TEXT_MODELS, [{"role": "user", "content": prompt}], max_tokens=120, temperature=0.4)
-    w = words(txt)
-    out = " ".join(w[:30])
-    if out and out[-1] not in ".!?":
-        out += "."
-    return out
+    return _chat(VISION_MODELS, msgs, max_tokens=90, temperature=0.2)
 
 def main():
-    path = input("Enter image path: ").strip()
-    try:
-        image = Image.open(path)
+    user_prompt = input("Enter a short prompt or story idea: ")
+    if not user_prompt.strip():
+        print("No prompt entered. Exiting.")
+        return
 
-        print(Fore.YELLOW + "Generating caption...")
-        caption = get_caption(image)
-        print(Fore.GREEN + "Caption: " + Style.BRIGHT + caption)
+    print("\n=== Generating Text ===")
+    text_prompt = generate_text(user_prompt)
+    print("Generated Text Prompt:\n", text_prompt)
 
-        more = input("Expand to 30 words? (y/n): ").strip().lower()
-        if more == "y":
-            print(Fore.YELLOW + "Expanding...")
-            description = expand_caption(caption)
-            print(Fore.GREEN + "Expanded: " + Style.BRIGHT + description)
+    print("\n=== Generating Image ===")
+    image_data = generate_image(text_prompt)
+    with open("generated_image.png", "wb") as f:
+        f.write(image_data)
+    Image.open(BytesIO(image_data)).show()
 
-    except Exception as e:
-        print(Fore.RED + f"Error: {e}")
+    print("\n=== Captioning the Generated Image ===")
+    final_caption = caption_image(image_data)
+    print("Final AI-Generated Caption:\n", final_caption)
 
 if __name__ == "__main__":
     main()

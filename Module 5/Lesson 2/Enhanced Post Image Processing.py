@@ -1,6 +1,3 @@
-# styled_image_creator.py
-
-
 import time
 import requests
 from PIL import Image, ImageEnhance, ImageFilter

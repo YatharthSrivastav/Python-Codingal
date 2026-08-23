@@ -135,44 +135,44 @@ def main():
 
         if basic_caption.startswith("Error:") and choice in {"1", "2", "3"}:
             basic_caption = get_basic_caption(image_path)
-            print(f"{Fore.YELLOW}📝 Basic caption: {Style.BRIGHT}{basic_caption}\n")
+            print(f"{Fore.YELLOW}Basic caption: {Style.BRIGHT}{basic_caption}\n")
 
         if choice == "1":
             if basic_caption.startswith("Error:"):
-                print(f"{Fore.RED}❌ Caption (5 words): {Style.BRIGHT}{basic_caption}\n")
+                print(f"{Fore.RED}Caption (5 words): {Style.BRIGHT}{basic_caption}\n")
             else:
                 out = ensure_sentence_end(exact_n_words(basic_caption, 5))
-                print(f"{Fore.GREEN}✅ Caption (5 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
+                print(f"{Fore.GREEN}Caption (5 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
 
         elif choice == "2":
             if basic_caption.startswith("Error:"):
-                print(f"{Fore.RED}❌ Failed to generate description: {basic_caption}")
+                print(f"{Fore.RED}Failed to generate description: {basic_caption}")
                 continue
             prompt = ("Rewrite as EXACTLY 30 words. Single paragraph. One complete sentence. "
                       "End with a period. No title/bullets.\n\nText: " + basic_caption)
             try:
                 out = generate_exact_sentence(prompt, 30, max_new_tokens=220, tries=6)
-                print(f"{Fore.GREEN}✅ Description (30 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
+                print(f"{Fore.GREEN}Description (30 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
             except Exception as e:
-                print(f"{Fore.RED}❌ Failed to generate description: {e}")
+                print(f"{Fore.RED}Failed to generate description: {e}")
 
         elif choice == "3":
             if basic_caption.startswith("Error:"):
-                print(f"{Fore.RED}❌ Failed to generate summary: {basic_caption}")
+                print(f"{Fore.RED}Failed to generate summary: {basic_caption}")
                 continue
             prompt = ("Write EXACTLY 50 words. Single paragraph. One complete sentence. "
                       "End with a period. No title/bullets/extra text.\n\nImage seed: " + basic_caption)
             try:
                 out = generate_exact_sentence(prompt, 50, max_new_tokens=280, tries=7)
-                print(f"{Fore.GREEN}✅ Summary (50 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
+                print(f"{Fore.GREEN}Summary (50 words): {Fore.YELLOW}{Style.BRIGHT}{out}\n")
             except Exception as e:
-                print(f"{Fore.RED}❌ Failed to generate summary: {e}")
+                print(f"{Fore.RED}Failed to generate summary: {e}")
 
         elif choice == "4":
-            print(f"{Fore.GREEN}👋 Goodbye!")
+            print(f"{Fore.GREEN}Goodbye!")
             break
         else:
-            print(f"{Fore.RED}❌ Invalid choice. Please enter 1-4.")
+            print(f"{Fore.RED}Invalid choice. Please enter 1-4.")
 
 if __name__ == "__main__":
     main()

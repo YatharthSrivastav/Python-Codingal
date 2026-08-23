@@ -34,8 +34,7 @@ def respond_to_command(command):
     elif "exit" or "quit" in command:
         speak("Goodbye!")
         return False
-    else:
-        speak("I am not sure how I can help with that!")
+    speak("I am not sure how I can help with that!")
     return True
 
 def main():
